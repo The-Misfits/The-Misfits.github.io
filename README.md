@@ -1,4 +1,4 @@
-# skhiearth.github.io
+# The Misfits
 
-Personal Portfolio
+Team Portfolio
 
