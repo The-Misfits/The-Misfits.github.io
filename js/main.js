@@ -1,153 +1,333 @@
-;(function () {
+/* ===================================================================
+ * Flare 1.0.0 - Main JS
+ *
+ * ------------------------------------------------------------------- */
 
-	'use strict';
+(function($) {
 
-	var isMobile = {
-		Android: function() {
-			return navigator.userAgent.match(/Android/i);
-		},
-			BlackBerry: function() {
-			return navigator.userAgent.match(/BlackBerry/i);
-		},
-			iOS: function() {
-			return navigator.userAgent.match(/iPhone|iPad|iPod/i);
-		},
-			Opera: function() {
-			return navigator.userAgent.match(/Opera Mini/i);
-		},
-			Windows: function() {
-			return navigator.userAgent.match(/IEMobile/i);
-		},
-			any: function() {
-			return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
-		}
-	};
+    "use strict";
+    
+    const cfg = {
+                scrollDuration : 800, // smoothscroll duration
+                mailChimpURL   : ''   // mailchimp url
+                };
+    const $WIN = $(window);
 
 
-	var fullHeight = function() {
+    // Add the User Agent to the <html>
+    // will be used for IE10/IE11 detection (Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0; rv:11.0))
+    // const doc = document.documentElement;
+    // doc.setAttribute('data-useragent', navigator.userAgent);
 
-		if ( !isMobile.any() ) {
-			$('.js-fullheight').css('height', $(window).height());
-			$(window).resize(function(){
-				$('.js-fullheight').css('height', $(window).height());
-			});
-		}
-	};
 
-	// Parallax
-	var parallax = function() {
-		$(window).stellar();
-	};
+   /* preloader
+    * -------------------------------------------------- */
+    const ssPreloader = function() {
 
-	var contentWayPoint = function() {
-		var i = 0;
-		$('.animate-box').waypoint( function( direction ) {
+        $("html").addClass('ss-preload');
 
-			if( direction === 'down' && !$(this.element).hasClass('animated-fast') ) {
+        $WIN.on('load', function() {
 
-				i++;
+            // force page scroll position to top at page refresh
+            $('html, body').animate({ scrollTop: 0 }, 'normal');
 
-				$(this.element).addClass('item-animate');
-				setTimeout(function(){
+            // will first fade out the loading animation 
+            $("#loader").fadeOut("slow", function() {
+                // will fade out the whole DIV that covers the website.
+                $("#preloader").delay(300).fadeOut("slow");
+            }); 
+            
+            // for hero content animations 
+            $("html").removeClass('ss-preload');
+            $("html").addClass('ss-loaded');
 
-					$('body .animate-box.item-animate').each(function(k){
-						var el = $(this);
-						setTimeout( function () {
-							var effect = el.data('animate-effect');
-							if ( effect === 'fadeIn') {
-								el.addClass('fadeIn animated-fast');
-							} else if ( effect === 'fadeInLeft') {
-								el.addClass('fadeInLeft animated-fast');
-							} else if ( effect === 'fadeInRight') {
-								el.addClass('fadeInRight animated-fast');
-							} else {
-								el.addClass('fadeInUp animated-fast');
-							}
-
-							el.removeClass('item-animate');
-						},  k * 100, 'easeInOutExpo' );
-					});
-
-				}, 50);
-
-			}
-
-		} , { offset: '85%' } );
-	};
+        });
+    };
 
 
 
-	var goToTop = function() {
-
-		$('.js-gotop').on('click', function(event){
-
-			event.preventDefault();
-
-			$('html, body').animate({
-				scrollTop: $('html').offset().top
-			}, 500, 'easeInOutExpo');
-
-			return false;
-		});
-
-		$(window).scroll(function(){
-
-			var $win = $(window);
-			if ($win.scrollTop() > 200) {
-				$('.js-top').addClass('active');
-			} else {
-				$('.js-top').removeClass('active');
-			}
-
-		});
-
-	};
-
-	function goto(url){
- 		window.location=url;
- 	}
-
-	var pieChart = function() {
-		$('.chart').easyPieChart({
-			scaleColor: false,
-			lineWidth: 4,
-			lineCap: 'butt',
-			barColor: '#FF9000',
-			trackColor:	"#f5f5f5",
-			size: 160,
-			animate: 1000
-		});
-	};
-
-	var skillsWayPoint = function() {
-		if ($('#fh5co-skills').length > 0 ) {
-			$('#fh5co-skills').waypoint( function( direction ) {
-
-				if( direction === 'down' && !$(this.element).hasClass('animated') ) {
-					setTimeout( pieChart , 400);
-					$(this.element).addClass('animated');
-				}
-			} , { offset: '90%' } );
-		}
-
-	};
+   /* pretty print
+    * -------------------------------------------------- */
+    const ssPrettyPrint = function() {
+        $('pre').addClass('prettyprint');
+        $( document ).ready(function() {
+            prettyPrint();
+        });
+    };
 
 
-	// Loading page
-	var loaderPage = function() {
-		$(".fh5co-loader").fadeOut("slow");
-	};
+
+   /* move header
+    * -------------------------------------------------- */
+    const ssMoveHeader = function () {
+
+        const $hero = $('.s-hero'),
+              $hdr = $('.s-header'),
+              triggerHeight = $hero.outerHeight() - 170;
 
 
-	$(function(){
-		contentWayPoint();
-		goToTop();
-		loaderPage();
-		fullHeight();
-		parallax();
-		// pieChart();
-		skillsWayPoint();
-	});
+        $WIN.on('scroll', function () {
+
+            let loc = $WIN.scrollTop();
+
+            if (loc > triggerHeight) {
+                $hdr.addClass('sticky');
+            } else {
+                $hdr.removeClass('sticky');
+            }
+
+            if (loc > triggerHeight + 20) {
+                $hdr.addClass('offset');
+            } else {
+                $hdr.removeClass('offset');
+            }
+
+            if (loc > triggerHeight + 150) {
+                $hdr.addClass('scrolling');
+            } else {
+                $hdr.removeClass('scrolling');
+            }
+
+        });
+
+    };
 
 
-}());
+
+   /* mobile menu
+    * ---------------------------------------------------- */ 
+    const ssMobileMenu = function() {
+
+        const $toggleButton = $('.s-header__menu-toggle');
+        const $headerContent = $('.s-header__content');
+        const $siteBody = $("body");
+
+        $toggleButton.on('click', function(event){
+            event.preventDefault();
+            $toggleButton.toggleClass('is-clicked');
+            $siteBody.toggleClass('menu-is-open');
+        });
+
+        $headerContent.find('.s-header__nav a, .btn').on("click", function() {
+
+            // at 900px and below
+            if (window.matchMedia('(max-width: 900px)').matches) {
+                $toggleButton.toggleClass('is-clicked');
+                $siteBody.toggleClass('menu-is-open');
+            }
+        });
+
+        $WIN.on('resize', function() {
+
+            // above 900px
+            if (window.matchMedia('(min-width: 901px)').matches) {
+                if ($siteBody.hasClass("menu-is-open")) $siteBody.removeClass("menu-is-open");
+                if ($toggleButton.hasClass("is-clicked")) $toggleButton.removeClass("is-clicked");
+            }
+        });
+
+    };
+
+
+
+   /* photoswipe
+    * ----------------------------------------------------- */
+    const ssPhotoswipe = function() {
+        const items = [],
+              $pswp = $('.pswp')[0],
+              $folioItems = $('.folio-item');
+
+        // get items
+        $folioItems.each( function(i) {
+
+            let $folio = $(this),
+                $thumbLink =  $folio.find('.folio-item__thumb-link'),
+                $title = $folio.find('.folio-item__title'),
+                $caption = $folio.find('.folio-item__caption'),
+                $titleText = '<h4>' + $.trim($title.html()) + '</h4>',
+                $captionText = $.trim($caption.html()),
+                $href = $thumbLink.attr('href'),
+                $size = $thumbLink.data('size').split('x'),
+                $width  = $size[0],
+                $height = $size[1];
+        
+            let item = {
+                src  : $href,
+                w    : $width,
+                h    : $height
+            }
+
+            if ($caption.length > 0) {
+                item.title = $.trim($titleText + $captionText);
+            }
+
+            items.push(item);
+        });
+
+        // bind click event
+        $folioItems.each(function(i) {
+
+            $(this).find('.folio-item__thumb-link').on('click', function(e) {
+                e.preventDefault();
+                let options = {
+                    index: i,
+                    showHideOpacity: true
+                }
+
+                // initialize PhotoSwipe
+                let lightBox = new PhotoSwipe($pswp, PhotoSwipeUI_Default, items, options);
+                lightBox.init();
+            });
+
+        });
+    };
+
+
+
+   /* slick slider
+    * ------------------------------------------------------ */
+    const ssSlickSlider = function() {
+
+        $('.clients').slick({
+            arrows: false,
+            dots: true,
+            infinite: true,
+            slidesToShow: 5,
+            slidesToScroll: 1,
+            pauseOnFocus: false,
+            autoplaySpeed: 1000,
+            responsive: [
+                {
+                    breakpoint: 1000,
+                    settings: {
+                        slidesToShow: 4
+                    }
+                },
+                {
+                    breakpoint: 800,
+                    settings: {
+                        slidesToShow: 3,
+                        slidesToScroll: 2
+                    }
+                },
+                {
+                    breakpoint: 500,
+                    settings: {
+                        slidesToShow: 2,
+                        slidesToScroll: 2
+                    }
+                }
+
+            ]
+        });
+
+        $('.testimonial-slider').slick({
+            arrows: true,
+            dots: false,
+            infinite: true,
+            slidesToShow: 1,
+            slidesToScroll: 1,
+            pauseOnFocus: false,
+            autoplaySpeed: 1500,
+            responsive: [
+                {
+                    breakpoint: 600,
+                    settings: {
+                        arrows: false,
+                        dots: true
+                    }
+                }
+            ]
+        });
+
+    };
+
+
+   /* animate on scroll
+    * ------------------------------------------------------ */
+    const ssAOS = function() {
+        
+        AOS.init( {
+            offset: 100,
+            duration: 600,
+            easing: 'ease-in-out',
+            delay: 300,
+            once: true,
+            disable: 'mobile'
+        });
+
+    };
+
+
+
+   /* alert boxes
+    * ------------------------------------------------------ */
+    const ssAlertBoxes = function() {
+
+        $('.alert-box').on('click', '.alert-box__close', function() {
+            $(this).parent().fadeOut(500);
+        }); 
+
+    };
+
+    
+   /* smooth scrolling
+    * ------------------------------------------------------ */
+    const ssSmoothScroll = function() {
+        
+        $('.smoothscroll').on('click', function (e) {
+            const target = this.hash;
+            const $target = $(target);
+            
+            e.preventDefault();
+            e.stopPropagation();
+
+            $('html, body').stop().animate({
+                'scrollTop': $target.offset().top
+            }, cfg.scrollDuration, 'swing').promise().done(function () {
+                window.location.hash = target;
+            });
+        });
+
+    };
+
+
+   /* back to top
+    * ------------------------------------------------------ */
+    const ssBackToTop = function() {
+        
+        const pxShow = 800;
+        const $goTopButton = $(".ss-go-top")
+
+        // Show or hide the button
+        if ($(window).scrollTop() >= pxShow) $goTopButton.addClass('link-is-visible');
+
+        $(window).on('scroll', function() {
+            if ($(window).scrollTop() >= pxShow) {
+                if(!$goTopButton.hasClass('link-is-visible')) $goTopButton.addClass('link-is-visible')
+            } else {
+                $goTopButton.removeClass('link-is-visible')
+            }
+        });
+    };
+
+
+
+   /* initialize
+    * ------------------------------------------------------ */
+    (function ssInit() {
+
+        ssPreloader();
+        ssPrettyPrint();
+        ssMoveHeader();
+        ssMobileMenu();
+        ssPhotoswipe();
+        ssSlickSlider();
+        ssAOS();
+        ssAlertBoxes();
+        ssSmoothScroll();
+        ssBackToTop();
+
+    })();
+
+})(jQuery);
