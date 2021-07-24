@@ -3480,11 +3480,10 @@ input::-moz-focus-inner {
     background-image: url(../images/misfits.png);
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 50%;
+    background-size: 40%;
     background-color: #000000;
     width: 100%;
     height: 100vh;
-    min-height: calc(25.5 * var(--space));
     overflow: hidden;
     position: relative;
 }
@@ -3663,24 +3662,22 @@ input::-moz-focus-inner {
  * ------------------------------------------------------------------- */
 .s-hero__scroll {
     position: absolute;
-    left: 6vw;
+    margin: auto;
+    width: 100%;
     bottom: 0;
-    -webkit-transform: rotate(90deg) translateX(-200px);
-    transform: rotate(90deg) translateX(-200px);
-    -webkit-transform-origin: left bottom;
-    transform-origin: left bottom;
+    text-align: center;
+    padding-bottom: 30px;
 }
 
 .s-hero__scroll-link {
     display: inline-block;
     font-family: var(--font-2);
-    font-weight: 300;
-    font-size: 9px;
+    font-weight: 500;
+    font-size: 12px;
     line-height: 3.2rem;
     height: 3.2rem;
     text-transform: uppercase;
     letter-spacing: .4em;
-    text-align: left;
     vertical-align: middle;
     color: var(--color-text);
     position: relative;
